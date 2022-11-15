@@ -13,7 +13,7 @@ const plays = {
   }
 }
 
-const invoices = [
+const invoice = [
   {
     'customer': 'BigCo',
     'performances': [
@@ -80,31 +80,48 @@ function usd(aNumber) {
   }).format(aNumber/100); // 단위 변환 로직도 함수 안으로 이동
 }
 
-// 최상위 함수
-function statement(invoice, plays) {
-  let totalAmount = 0;
-  let volumeCredits = 0;
-  let result = `청구 (고객:${invoice.customer}\n)`;
-  // 함수로 추출 후 임시 변수 format 대신 함수 호출
-  // const format = new Intl.NumberFormat("en-US", {
-  //   style: "currency", currency: "USD",
-  //   minimumFractionDigits: 2
-  // }).format;
+function totalVolumeCredit() {
+  let result = 0; 
+  for (let perf of invoice.performances) {
+    result += volumeCreditsFor(perf)
+  }
+
+  return result;
+}
+
+function totalAmount() {
+  let result = 0;
 
   for (let perf of invoice.performances) {
     //변수 인라인 적용
     // const play = playFor(perf);
 
     // switch 문을 함수형태로 바꾼 뒤 함수 call
-    
-    volumeCredits += volumeCreditsFor(perf)
 
-    result += `${playFor(perf).name}: ${usd(amountFor(perf) / 100)}(${perf.audience}석\n)`
-    totalAmount += amountFor(perf)
+    // 청구 내역 출력
+    result += amountFor(perf)
   }
-  result += `총액: ${usd(totalAmount)}\n`
-  result += `적립 포인트: ${volumeCredits}점\n`
+  return result;
+}
+
+// 최상위 함수
+function statement(invoice, plays) {
+  
+  let result = `청구 (고객:${invoice.customer}\n)`;
+  // 함수로 추출 후 임시 변수 format 대신 함수 호출
+  // const format = new Intl.NumberFormat("en-US", {
+  //   style: "currency", currency: "USD",
+  //   minimumFractionDigits: 2
+  // }).format;
+  
+  result += `총액: ${usd(totalAmount())}\n`
+  result += `적립 포인트: ${totalVolumeCredit()}점\n`
   return result
 }
 
-statement(invoices,plays)
+
+// 1. 반복문 쪼개기
+// 2. 문장 슬라이드하기
+// 3. 함수 추출하기
+// 4. 변수 인라인하기
+// --> 중첩 함수가 많아짐
